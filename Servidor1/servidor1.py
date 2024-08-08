@@ -129,6 +129,30 @@ while True:
                 # respsta para tratamento do erro
                 response = "HTTP/1.1 500 Internal Server Error\n\n" + str(e)
 
+        elif requestType == "POST":
+            if '/upload' in filename:
+                # Extrai os dados binários do corpo da requisição
+                body = data[data.find(b"\r\n\r\n") + 4:]
+
+                # Extraia o nome do arquivo do cabeçalho do conteúdo
+                headers_dict = {}
+                for header in headers:
+                    if ': ' in header:
+                        key, value = header.split(': ', 1)
+                        headers_dict[key] = value
+
+                content_disposition = headers_dict.get("Content-Disposition", "")
+                if "filename=" in content_disposition:
+                    filename = content_disposition.split("filename=")[1].strip().replace('"', '')
+
+                # Salva o arquivo no diretório desejado
+                try:
+                    with open(f"Servidor1/htdocs/{filename}", "wb") as file:
+                        file.write(body)
+                    response = "HTTP/1.1 201 Created\n\n<h1>File Uploaded Successfully</h1>"
+                except Exception as e:
+                    response = f"HTTP/1.1 500 Internal Server Error\n\n<h1>Error: {str(e)}</h1>"
+
         else:
 
             response = "HTTP/1.1 405 Method Not Allowed\n\n<h1>NOT ALLOWED METHOD 405!<br>Method Not Allowed For This Server!</h1>"

@@ -1,110 +1,99 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servidor1</title>
     <style>
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            flex-direction: column;
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
-            position: relative; /* Adicionado */
+            margin: 0;
+            padding: 20px;
         }
-        h1 {
-            color: #333;
-        }
-        #options {
+        header {
             display: flex;
-            justify-content: space-around;
-            width: 100%;
-        }
-        #options span {
-            padding: 10px 20px;
-            border-radius: 5px;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
             background-color: #007BFF;
             color: white;
-            cursor: pointer;
-            transition: all 0.5s ease;
-        }
-        #options span:hover {
-            background-color: #0056b3;
-        }
-        #message {
-            margin-top: 20px;
-            font-size: 20px;
-            color: green;
-        }
-        #botao {
-            display: none;
-            padding: 10px 20px;
             border-radius: 5px;
-            background-color: #007BFF;
-            color: white;
-            cursor: pointer;
-            transition: all 0.5s ease;
+        }
+        header h1 {
+            margin: 0;
+        }
+        #file-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
             margin-top: 20px;
         }
-        #botao:hover {
-            background-color: #0056b3;
-        }
-        /* Adicionado */
-        .links {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
+        .file {
             display: flex;
             flex-direction: column;
-        }
-        .links a {
-            margin-bottom: 10px;
-            text-decoration: none;
-        }
-        .links a button {
-            padding: 10px 20px;
-            border-radius: 5px;
-            background-color: #007BFF;
-            color: white;
+            align-items: center;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             cursor: pointer;
-            transition: all 0.5s ease;
-            text-decoration: none;
-            border: none;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        .links a button:hover {
-            background-color: #0056b3;
+        .file:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .file img {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 10px;
+        }
+        .file span {
+            font-size: 14px;
+            color: #333;
         }
     </style>
 </head>
 <body>
+
+    <header>
+        <h1>Arquivos Servidor1</h1>
+        <button onclick="uploadFile()">Upload Arquivo</button>
+    </header>
+
+    <div id="file-container">
+        <!-- Exemplo de arquivos -->
+        <div class="file">
+            <img src="catJam.jpg" alt="File Icon">
+            <span>catJam.jpg</span>
+        </div>
+    </div>
+
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="fileInput" name="file">
+        <button type="button" onclick="uploadFile()">Upload Arquivo</button>
+    </form>
     
-    <h1>Qual nota esse trabalho merece?</h1>
-    <div id="options">
-        <span id="zero">0</span>
-        <span id="ten">10</span>
-    </div>
-    <div id="message"></div>
-    <button id="botao" onclick="redirecionarParaTeste()">Proxima Pagina</button>
-    <div class="links">
-        <a href="thanks.html">Agradecimento</a>
-        <a href="cat.html">Gato</a>
-    </div>
-
     <script>
-        document.getElementById('zero').addEventListener('mouseover', function() {
-            this.style.position = 'absolute';
-            this.style.left = Math.random() * window.innerWidth + 'px';
-            this.style.top = Math.random() * window.innerHeight + 'px';
-        });
-
-        document.getElementById('ten').addEventListener('click', function() {
-            document.getElementById('message').textContent = 'Valeu, Professor (^///^) (tente clicar no 0 se puder)';
-            document.getElementById('botao').style.display = 'block';
-        });
-
-        function redirecionarParaTeste() {
-            window.location.href = "thanks.html";
+        function uploadFile() {
+            const form = document.getElementById('uploadForm');
+            const formData = new FormData(form);
+    
+            fetch('http://localhost:8080/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+            });
         }
     </script>
+    
+
 </body>
 </html>

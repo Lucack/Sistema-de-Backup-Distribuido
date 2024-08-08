@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            position: relative; /* Adicionado */
+        }
+        h1 {
+            color: #333;
+        }
+        #options {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+        }
+        #options span {
+            padding: 10px 20px;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            transition: all 0.5s ease;
+        }
+        #options span:hover {
+            background-color: #0056b3;
+        }
+        #message {
+            margin-top: 20px;
+            font-size: 20px;
+            color: green;
+        }
+        #botao {
+            display: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            transition: all 0.5s ease;
+            margin-top: 20px;
+        }
+        #botao:hover {
+            background-color: #0056b3;
+        }
+        /* Adicionado */
+        .links {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        .links a {
+            margin-bottom: 10px;
+            text-decoration: none;
+        }
+        .links a button {
+            padding: 10px 20px;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            transition: all 0.5s ease;
+            text-decoration: none;
+            border: none;
+        }
+        .links a button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    
+    <h1>Qual nota esse trabalho merece?</h1>
+    <div id="options">
+        <span id="zero">0</span>
+        <span id="ten">10</span>
+    </div>
+    <div id="message"></div>
+    <button id="botao" onclick="redirecionarParaTeste()">Proxima Pagina</button>
+    <div class="links">
+        <a href="thanks.html">Agradecimento</a>
+        <a href="cat.html">Gato</a>
+    </div>
+
+    <script>
+        document.getElementById('zero').addEventListener('mouseover', function() {
+            this.style.position = 'absolute';
+            this.style.left = Math.random() * window.innerWidth + 'px';
+            this.style.top = Math.random() * window.innerHeight + 'px';
+        });
+
+        document.getElementById('ten').addEventListener('click', function() {
+            document.getElementById('message').textContent = 'Valeu, Professor (^///^) (tente clicar no 0 se puder)';
+            document.getElementById('botao').style.display = 'block';
+        });
+
+        function redirecionarParaTeste() {
+            window.location.href = "thanks.html";
+        }
+    </script>
+</body>
+</html>

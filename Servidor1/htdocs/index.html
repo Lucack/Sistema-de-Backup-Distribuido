@@ -23,6 +23,20 @@
         header h1 {
             margin: 0;
         }
+        .refresh-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .refresh-button:hover {
+            background-color: #218838;
+            transform: scale(1.05);
+        }
         #file-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -59,41 +73,29 @@
 
     <header>
         <h1>Arquivos Servidor1</h1>
-        <button onclick="uploadFile()">Upload Arquivo</button>
+        <button class="refresh-button" onclick="fetchFiles()">Refresh</button>
     </header>
 
     <div id="file-container">
-        <!-- Exemplo de arquivos -->
-        <div class="file">
-            <img src="catJam.jpg" alt="File Icon">
-            <span>catJam.jpg</span>
-        </div>
+        <!-- Lista de arquivos -->
     </div>
 
-    <form id="uploadForm" enctype="multipart/form-data">
-        <input type="file" id="fileInput" name="file">
-        <button type="button" onclick="uploadFile()">Upload Arquivo</button>
-    </form>
-    
     <script>
-        function uploadFile() {
-            const form = document.getElementById('uploadForm');
-            const formData = new FormData(form);
-    
-            fetch('http://localhost:8080/upload', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.text())
-            .then(data => {
-                alert(data);
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-            });
+        // Função para buscar e listar arquivos
+        function fetchFiles() {
+            fetch('http://localhost:8080/files')
+                .then(response => response.text())
+                .then(data => {
+                    const fileContainer = document.getElementById('file-container');
+                    fileContainer.innerHTML = data;
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar arquivos:', error);
+                });
         }
+
+        fetchFiles();
     </script>
-    
 
 </body>
 </html>

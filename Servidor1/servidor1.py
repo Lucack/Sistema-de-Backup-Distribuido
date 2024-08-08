@@ -1,5 +1,5 @@
 #implementação de um servidor base para interpratação de métodos HTTP
-
+import os
 import socket
 
 #definindo o endereço IP do host
@@ -78,31 +78,54 @@ while True:
             if filename == "/":
                 filename = "/index.html"
 
-            #try e except para tratamento de erro quando um arquivo solicitado não existir
-            try:
-                
-                # verifica se é imagem
-                if filename.endswith(('.png', '.jpg')):
-                    openarq = 'rb'
-                else:
-                    openarq = 'r'
+            if filename == "/files":
+                # Lista os arquivos no diretório e cria a resposta
+                try:
+                    files = os.listdir("Servidor1/htdocs")
+                    file_list = ""
+                    for file in files:
+                        if file != "index.html":
+                            file_path = os.path.join("Servidor1/htdocs", file)
+                            if os.path.isfile(file_path):
+                                file_list += f'''
+                                    <div class="file">
+                                        <img src="{file}" alt="File Icon">
+                                        <span>{file}</span>
+                                    </div>
+                                '''
+                    response = f"HTTP/1.1 200 OK\nContent-Type: text/html\n\n<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><title>File List</title><style>body{{font-family: Arial, sans-serif; background-color: #f0f0f0; margin: 0; padding: 20px;}} header{{display: flex; justify-content: space-between; align-items: center; padding: 10px; background-color: #007BFF; color: white; border-radius: 5px;}} header h1{{margin: 0;}} #file-container{{display: flex; flex-wrap: nowrap; overflow-x: auto; padding: 10px 0;}} .file{{display: flex; flex-direction: column; align-items: center; margin: 10px;}} .file img{{width: 100px; height: 100px; object-fit: cover;}}</style></head><body><div id='file-container'>{file_list}</div></body></html>"
+                    response.encode()
 
-                fin = open("Servidor1/htdocs" + filename, openarq)
-                content = fin.read()
+                except Exception as e:
+                    response = f"HTTP/1.1 500 Internal Server Error\n\n<h1>500 Internal Server Error</h1><p>{str(e)}</p>"
+                    response.encode()
 
-                # altera o cabeçalho para imagens
-                if openarq == 'rb':
-                    if filename.endswith(".png"):
-                        content_type = "image/png"  
+            else:
+                #try e except para tratamento de erro quando um arquivo solicitado não existir
+                try:
+                    
+                    # verifica se é imagem
+                    if filename.endswith(('.png', '.jpg')):
+                        openarq = 'rb'
                     else:
-                        content_type = "image/jpeg"
-                    response = f"HTTP/1.1 200 OK\nContent-Type: {content_type}\n\n".encode() + content
-                else:
-                    response = "HTTP/1.1 200 OK\n\n" + content
+                        openarq = 'r'
 
-            except FileNotFoundError:
-                # caso o arquivo solicitado não exista no servidor, gera uma resposta de erro
-                response = "HTTP/1.1 404 NOT FOUND\n\n<h1>ERROR 404!<br>File Not Found!</h1>"
+                    fin = open("Servidor1/htdocs" + filename, openarq)
+                    content = fin.read()
+
+                    # altera o cabeçalho para imagens
+                    if openarq == 'rb':
+                        if filename.endswith(".png"):
+                            content_type = "image/png"  
+                        else:
+                            content_type = "image/jpeg"
+                        response = f"HTTP/1.1 200 OK\nContent-Type: {content_type}\n\n".encode() + content
+                    else:
+                        response = "HTTP/1.1 200 OK\n\n" + content
+
+                except FileNotFoundError:
+                    # caso o arquivo solicitado não exista no servidor, gera uma resposta de erro
+                    response = "HTTP/1.1 404 NOT FOUND\n\n<h1>ERROR 404!<br>File Not Found!</h1>"
         
         elif requestType == "PUT":
 
@@ -129,30 +152,7 @@ while True:
                 # respsta para tratamento do erro
                 response = "HTTP/1.1 500 Internal Server Error\n\n" + str(e)
 
-        elif requestType == "POST":
-            if '/upload' in filename:
-                # Extrai os dados binários do corpo da requisição
-                body = data[data.find(b"\r\n\r\n") + 4:]
-
-                # Extraia o nome do arquivo do cabeçalho do conteúdo
-                headers_dict = {}
-                for header in headers:
-                    if ': ' in header:
-                        key, value = header.split(': ', 1)
-                        headers_dict[key] = value
-
-                content_disposition = headers_dict.get("Content-Disposition", "")
-                if "filename=" in content_disposition:
-                    filename = content_disposition.split("filename=")[1].strip().replace('"', '')
-
-                # Salva o arquivo no diretório desejado
-                try:
-                    with open(f"Servidor1/htdocs/{filename}", "wb") as file:
-                        file.write(body)
-                    response = "HTTP/1.1 201 Created\n\n<h1>File Uploaded Successfully</h1>"
-                except Exception as e:
-                    response = f"HTTP/1.1 500 Internal Server Error\n\n<h1>Error: {str(e)}</h1>"
-
+        
         else:
 
             response = "HTTP/1.1 405 Method Not Allowed\n\n<h1>NOT ALLOWED METHOD 405!<br>Method Not Allowed For This Server!</h1>"
@@ -168,5 +168,3 @@ while True:
         client_connection.close()
 
 server_socket.close()
-
-

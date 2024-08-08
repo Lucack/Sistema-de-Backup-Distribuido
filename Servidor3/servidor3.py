@@ -3,12 +3,12 @@ import os
 import socket
 
 #definindo nome do diretório do Servidor
-SERVER_NAME = "Servidor1"
+SERVER_NAME = "Servidor3"
 
 #definindo o endereço IP do host
 SERVER_HOST = ""
 #definindo o número da porta em que o servidor irá escutar pelas requisições HTTP
-SERVER_PORT = 8080
+SERVER_PORT = 8083
 
 #vamos criar o socket
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -23,7 +23,7 @@ server_socket.bind((SERVER_HOST, SERVER_PORT))
 server_socket.listen(1)
 
 #mensagem inicial do servidor
-print("\nServidor 1 em execução... \n")
+print("\nServidor 3 em execução... \n")
 print("Escutando por conexões na porta %s \n" % SERVER_PORT)
 print("Acesse http://localhost:%s \n\n" %SERVER_PORT)
 

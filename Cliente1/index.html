@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Servidor1</title>
+    <title>Client 1</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -72,8 +72,8 @@
 <body>
 
     <header>
-        <h1>Arquivos Servidor1</h1>
-        <button class="refresh-button" onclick="fetchFiles()">Refresh</button>
+        <h1>cliente 1</h1>
+        <button class="refresh-button" onclick="refreshPage()">Refresh</button>
     </header>
 
     <div id="file-container">
@@ -81,20 +81,35 @@
     </div>
 
     <script>
+        // Função para recarregar a página
+        function refreshPage() {
+            fetchFiles();
+        }
+
         // Função para buscar e listar arquivos
         function fetchFiles() {
             fetch('http://localhost:8080/files')
-                .then(response => response.text())
+                .then(response => response.json())
                 .then(data => {
                     const fileContainer = document.getElementById('file-container');
-                    fileContainer.innerHTML = data;
+                    fileContainer.innerHTML = '';
+                    data.forEach(file => {
+                        const fileDiv = document.createElement('div');
+                        fileDiv.className = 'file';
+                        fileDiv.innerHTML = `
+                            <img src="path/to/file-icon.png" alt="File Icon">
+                            <span>${file.name}</span>
+                        `;
+                        fileContainer.appendChild(fileDiv);
+                    });
                 })
                 .catch(error => {
                     console.error('Erro ao buscar arquivos:', error);
                 });
         }
 
-        fetchFiles();
+        // Inicializa a lista de arquivos ao carregar a página
+        document.addEventListener('DOMContentLoaded', fetchFiles);
     </script>
 
 </body>

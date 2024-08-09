@@ -131,6 +131,10 @@ while True:
                     response = "HTTP/1.1 404 NOT FOUND\n\n<h1>ERROR 404!<br>File Not Found!</h1>"
         
         elif requestType == "PUT":
+            
+            print("Requisição PUT recebida.")
+            print(f"Nome do arquivo: {filename}")
+            print(f"Corpo da requisição: {request[request.find('\r\n\r\n')+4:]}")
 
             body = request[request.find("\r\n\r\n"):]
 

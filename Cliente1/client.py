@@ -1,7 +1,7 @@
 import socket
 import os
 
-# Endereço do servidor e porta do gerenciador
+# Configurações do cliente
 SERVER_ADDRESS = "localhost"
 SERVER_PORT = 8080
 
@@ -14,35 +14,25 @@ def initial_menu():
 
 def send_file(client_socket, file_path):
     try:
-        # Enviar o nome do arquivo e calcular o tamanho do conteúdo
+        # Enviar o nome do arquivo e o tamanho do conteúdo
         file_name = os.path.basename(file_path)
         content_length = os.path.getsize(file_path)
         
-        # Preparar a linha de solicitação HTTP e os cabeçalhos
-        request_line = f"PUT /{file_name} HTTP/1.1\r\n"
-        headers = f"Host: {SERVER_ADDRESS}\r\nContent-Type: application/octet-stream\r\nContent-Length: {content_length}\r\n\r\n"
+        # Criar e enviar o cabeçalho
+        header = f"{file_name}\n{content_length}\n"
+        client_socket.sendall(header.encode())
         
-        # Ler o conteúdo do arquivo
+        # Ler o conteúdo do arquivo e enviar
         with open(file_path, 'rb') as file:
-            file_data = file.read()
-        
-        # Concatenar linha de solicitação, cabeçalhos e conteúdo do arquivo
-        request = request_line + headers
-        request_bytes = request.encode() + file_data
-        
-        # Enviar a requisição completa
-        client_socket.sendall(request_bytes)
-        
-        # Receber a resposta do servidor
-        response_parts = []
-        while True:
-            response = client_socket.recv(4096)
-            if not response:
-                break
-            response_parts.append(response)
-        
-        response = b''.join(response_parts).decode()
-        print("Resposta do servidor:", response)
+            while True:
+                chunk = file.read(1024)
+                if not chunk:
+                    break
+                client_socket.sendall(chunk)
+
+        # Enviar um finalizador para indicar que o envio está completo
+        client_socket.sendall(b'END_OF_FILE\n')
+        print("Arquivo enviado com sucesso.")
     
     except Exception as e:
         print(f"Erro ao enviar o arquivo: {e}")
@@ -51,7 +41,7 @@ def send_file(client_socket, file_path):
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 try:
-    # Conectar ao gerenciador
+    # Conectar ao gerente
     client_socket.connect((SERVER_ADDRESS, SERVER_PORT))
     
     while True:
@@ -76,4 +66,5 @@ try:
     
 finally:
     # Fechar a conexão
+    client_socket.shutdown(socket.SHUT_RDWR)
     client_socket.close()

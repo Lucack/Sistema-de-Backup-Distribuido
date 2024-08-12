@@ -54,8 +54,8 @@ def start_manager():
         print(f"Accepted connection from {addr}")
         
         # verificando se a requisição do cliente está sendo recebida
-        request = client_socket.recv(1024)
-        print(f"Requisição recebida no Manager: {request}")
+        # request = client_socket.recv(1024)
+        # print(f"Requisição recebida no Manager: {request}")
 
 
         # Handle the client request (sequentially)

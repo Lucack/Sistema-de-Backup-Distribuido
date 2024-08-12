@@ -19,13 +19,11 @@ def send_file(client_socket, file_path):
         content_length = os.path.getsize(file_path)
         
         # Enviar a linha de solicitação HTTP
-        client_socket.sendall(f"PUT /{file_name} HTTP/1.1\r\n".encode())
+        request_line = f"PUT /{file_name} HTTP/1.1\r\n"
+        headers = f"Host: {SERVER_ADDRESS}\r\nContent-Type: application/octet-stream\r\nContent-Length: {content_length}\r\n\r\n"
         
-        # Enviar os cabeçalhos HTTP
-        client_socket.sendall(f"Host: {SERVER_ADDRESS}\r\n".encode())
-        client_socket.sendall("Content-Type: application/octet-stream\r\n".encode())
-        client_socket.sendall(f"Content-Length: {content_length}\r\n".encode())
-        client_socket.sendall(b"\r\n")
+        client_socket.sendall(request_line.encode())
+        client_socket.sendall(headers.encode())
         
         # Enviar o conteúdo do arquivo
         with open(file_path, 'rb') as file:
@@ -33,12 +31,11 @@ def send_file(client_socket, file_path):
                 client_socket.sendall(chunk)
         
         # Receber a resposta do servidor
-        # response = client_socket.recv(1024).decode()
-        # print("Resposta do servidor:", response)
+        response = client_socket.recv(1024).decode()
+        print("Resposta do servidor:", response)
     
     except Exception as e:
         print(f"Erro ao enviar o arquivo: {e}")
-
 
 # Criar um socket TCP/IP
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

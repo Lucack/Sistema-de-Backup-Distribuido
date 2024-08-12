@@ -20,19 +20,24 @@ def handle_client(client_socket):
         worker_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         worker_socket.connect((worker_host, worker_port))
         
-        # Forward the client request to the worker server
-        request = client_socket.recv(1024)
-        print(f"Requisição recebida do cliente: {request}")
+        while True:
+            # Forward the client request to the worker server
+            request = client_socket.recv(4096)
+            if not request:
+                break
+            
+            print(f"Requisição recebida do cliente: {request}")
+            worker_socket.sendall(request)
         
-        worker_socket.sendall(request)
-        
-        # Get the response from the worker server
-        response = worker_socket.recv(1024)
-        print(f"Resposta recebida do servidor de trabalho: {response}")
-
-        
-        # Send the response back to the client
-        client_socket.sendall(response)
+            # Get the response from the worker server
+            response = worker_socket.recv(4096)
+            if not response:
+                break
+            
+            print(f"Resposta recebida do servidor de trabalho: {response}")
+            
+            # Send the response back to the client
+            client_socket.sendall(response)
 
     except Exception as e:
         print(f"Erro ao comunicar com o servidor de trabalho: {e}")
@@ -53,11 +58,6 @@ def start_manager():
         client_socket, addr = manager_socket.accept()
         print(f"Accepted connection from {addr}")
         
-        # verificando se a requisição do cliente está sendo recebida
-        # request = client_socket.recv(1024)
-        # print(f"Requisição recebida no Manager: {request}")
-
-
         # Handle the client request (sequentially)
         handle_client(client_socket)
 

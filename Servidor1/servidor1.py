@@ -41,9 +41,12 @@ while True:
         except socket.timeout:
             break
 
+
+    print("Dados brutos:", data)
+    
     # Extraindo cabeçalhos e corpo da solicitação
     request_str = data.decode('utf-8', errors='ignore')
-    print("dados recebidos:", request_str)
+    print("Dados recebidos:", request_str)
 
     if '\r\n\r\n' in request_str:
         headers, body = request_str.split('\r\n\r\n', 1)

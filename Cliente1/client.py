@@ -14,24 +14,34 @@ def initial_menu():
 
 def send_file(client_socket, file_path):
     try:
-        # Enviar o nome do arquivo
+        # Enviar o nome do arquivo e calcular o tamanho do conteúdo
         file_name = os.path.basename(file_path)
         content_length = os.path.getsize(file_path)
         
-        # Enviar a linha de solicitação HTTP
+        # Preparar a linha de solicitação HTTP e os cabeçalhos
         request_line = f"PUT /{file_name} HTTP/1.1\r\n"
         headers = f"Host: {SERVER_ADDRESS}\r\nContent-Type: application/octet-stream\r\nContent-Length: {content_length}\r\n\r\n"
         
-        client_socket.sendall(request_line.encode())
-        client_socket.sendall(headers.encode())
-        
-        # Enviar o conteúdo do arquivo
+        # Ler o conteúdo do arquivo
         with open(file_path, 'rb') as file:
-            while chunk := file.read(1024):
-                client_socket.sendall(chunk)
+            file_data = file.read()
+        
+        # Concatenar linha de solicitação, cabeçalhos e conteúdo do arquivo
+        request = request_line + headers
+        request_bytes = request.encode() + file_data
+        
+        # Enviar a requisição completa
+        client_socket.sendall(request_bytes)
         
         # Receber a resposta do servidor
-        response = client_socket.recv(1024).decode()
+        response_parts = []
+        while True:
+            response = client_socket.recv(4096)
+            if not response:
+                break
+            response_parts.append(response)
+        
+        response = b''.join(response_parts).decode()
         print("Resposta do servidor:", response)
     
     except Exception as e:

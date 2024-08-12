@@ -1,55 +1,99 @@
 import socket
 
-# Configurações do gerente
-MANAGER_HOST = "localhost"  # Ou "0.0.0.0" para aceitar conexões de qualquer IP
+# Manager Server Configuration
+MANAGER_ADRESS = ""
 MANAGER_PORT = 8080
 
+# Worker Servers Configuration
+WORKER_SERVERS = [('localhost', 8081),('localhost', 8082),('localhost', 8083),('localhost', 8084)]
+carga = [0,0,0,0]
+
 def handle_client(client_socket):
+    # temos que arrumar depois, e faremos baseado no vetor carga
+    
     try:
-        # Receber o cabeçalho
-        header_data = client_socket.recv(1024).decode('utf-8', errors='ignore')
-        if not header_data:
-            raise ValueError("Cabeçalho não recebido")
+        filename = client_socket.recv(1024).decode().strip()
+        print(f"Arquivo {filename} recebido.")
 
-        header_lines = header_data.split('\n')
-        if len(header_lines) < 2:
-            raise ValueError("Cabeçalho inválido")
-
-        file_name = header_lines[0]
-        content_length = int(header_lines[1])
-        print(f"Recebido:\nNome do Arquivo: {file_name}\nTamanho do Conteúdo: {content_length} bytes")
-
-        # Receber o corpo
-        data = b''
-        while len(data) < content_length:
-            packet = client_socket.recv(1024)
-            if not packet:
+        # receber dados do arquivo
+        data = b""
+        while True:
+            seg = client_socket.recv(1024).strip()
+            # if b"<TININI>" == seg:
+            if b"<TININI>" in seg:
+                seg = seg.replace(b"<TININI>", b"")
+                data += seg
                 break
-            data += packet
-
-        # Salvar o arquivo recebido para verificar
-        with open(file_name, 'wb') as f:
-            f.write(data)
-
-        print(f"Conteúdo do Arquivo Recebido e salvo como '{file_name}'")
+            data += seg
+            
 
     except Exception as e:
-        print(f"Erro: {e}")
+        print(f"Erro ao processar os dados do cliente: {e}")
 
-    finally:
-        client_socket.close()
+    return filename, data   
+
+def choose_sv(carga):
+    principal = -1
+    replica = -1
+    #lembrar de fazer uma escolha pelo mínimo, e acessar o si correspondente no vetor de servidores
+    min_carga = float('inf')
+    for i in range(len(carga)):
+        if carga[i] < min_carga:
+            min_carga = carga[i]
+            principal = i
+
+    min_carga = float('inf')
+    for i in range(len(carga)):
+        if i == principal:
+            continue
+        if carga[i] < min_carga:
+            min_carga = carga[i]
+            replica = i
+
+    return principal, replica
+
+def sendto_server(filename, data, principal, replica):
+
+    principal_adress, principal_port = WORKER_SERVERS[principal][0], WORKER_SERVERS[principal][1]
+    replica_adress, replica_port = WORKER_SERVERS[replica][0], WORKER_SERVERS[replica][1]
+
+    try:
+        manager_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        manager_socket.connect((principal_adress, principal_port))
+        header = f"{filename}\n{replica_adress}\n{replica_port}\n\n"
+        manager_socket.sendall(header.encode())
+        print(f"Header enviado para porta {principal_port}")
+
+        manager_socket.sendall(data)
+        print(f"Conteúdo {filename} enviado para {principal_port}")
+
+        end = b"<TININI>"
+        manager_socket.sendall(end)
+
+    except Exception as e:
+        print(f"Erro no envio do arquivo: {e}")
+
+    carga[principal] += 1
+    carga[replica] += 1
 
 def start_manager():
     manager_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    manager_socket.bind((MANAGER_HOST, MANAGER_PORT))
-    manager_socket.listen(5)
-
-    print(f"Gerente escutando na porta {MANAGER_PORT}...")
-
+    manager_socket.bind((MANAGER_ADRESS, MANAGER_PORT))
+    manager_socket.listen(1)
+    
+    print(f"Manager Server listening on port {MANAGER_PORT}...")
+    
     while True:
         client_socket, addr = manager_socket.accept()
-        print(f"Conexão aceita de {addr}")
-        handle_client(client_socket)
+        print(f"Accepted connection from {addr}")
+        
+        # Handle the client request (sequentially)
+        filename, data = handle_client(client_socket)
+        print(filename, data)
+        principal, replica = choose_sv(carga)
+        print(principal,replica)
+        #sendto_server(filename, data, WORKER_SERVERS[principal][0], WORKER_SERVERS[principal][1], WORKER_SERVERS[replica][0], WORKER_SERVERS[replica][1])
+        sendto_server(filename, data, principal, replica)
 
-if __name__ == "__main__":
-    start_manager()
+
+start_manager()

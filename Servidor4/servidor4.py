@@ -3,13 +3,13 @@
 import socket
 
 # nome do servidor
-SERVER_NAME = "Servidor 2"
+SERVER_NAME = "Servidor 4"
 
 # definindo o endereço IP do host
 SERVER_HOST = "localhost"
 
 # definindo o número da porta em que o servidor irá escutar pelas requisições HTTP
-SERVER_PORT = 8082
+SERVER_PORT = 8084
 
 # diretorio do servidor
 SERVER_DIRECTORY = SERVER_NAME.replace(" ", "")

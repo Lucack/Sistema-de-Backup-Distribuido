@@ -29,9 +29,7 @@ def send_file(client_socket, file_path):
                 if not chunk:
                     break
                 client_socket.sendall(chunk)
-
-        # Enviar um finalizador para indicar que o envio está completo
-        client_socket.sendall(b'END_OF_FILE\n')
+        
         print("Arquivo enviado com sucesso.")
     
     except Exception as e:
@@ -66,5 +64,4 @@ try:
     
 finally:
     # Fechar a conexão
-    client_socket.shutdown(socket.SHUT_RDWR)
     client_socket.close()

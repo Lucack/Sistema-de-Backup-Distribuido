@@ -1,39 +1,8 @@
 import socket
-import os
-import random
 
 # Configurações do gerente
-MANAGER_HOST = "localhost"
+MANAGER_HOST = "localhost"  # Ou "0.0.0.0" para aceitar conexões de qualquer IP
 MANAGER_PORT = 8080
-BASE_SERVERS = [("localhost", 8081)]
-
-# BASE_SERVERS = [("localhost", 8081), ("localhost", 8082), ("localhost", 8083)]
-
-def forward_to_base_server(file_name, data):
-    try:
-        # Escolher aleatoriamente um servidor de base
-        base_server = random.choice(BASE_SERVERS)
-        
-        # Criar um socket para o servidor de base
-        base_server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        base_server_socket.connect(base_server)
-        
-        # Criar e enviar o cabeçalho
-        content_length = len(data)
-        header = f"{file_name}\n{content_length}\n"
-        base_server_socket.sendall(header.encode())
-        
-        # Enviar o corpo
-        base_server_socket.sendall(data)
-        
-        # Enviar um finalizador para indicar que o envio está completo
-        base_server_socket.sendall(b'END_OF_FILE\n')
-        base_server_socket.close()
-
-        print(f"Encaminhado para o servidor de base {base_server[1]}")
-
-    except Exception as e:
-        print(f"Erro ao encaminhar para o servidor de base: {e}")
 
 def handle_client(client_socket):
     try:
@@ -58,12 +27,11 @@ def handle_client(client_socket):
                 break
             data += packet
 
-        # Verificar o finalizador
-        if data.endswith(b'END_OF_FILE\n'):
-            data = data[:-len(b'END_OF_FILE\n')]
+        # Salvar o arquivo recebido para verificar
+        with open(file_name, 'wb') as f:
+            f.write(data)
 
-        # Encaminhar para o servidor de base
-        forward_to_base_server(file_name, data)
+        print(f"Conteúdo do Arquivo Recebido e salvo como '{file_name}'")
 
     except Exception as e:
         print(f"Erro: {e}")

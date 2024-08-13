@@ -30,7 +30,7 @@ def receive_from_any(connection_socket):
 
         print(f"Itens do Header: \n{header} \n")
 
-        data = data.strip()
+        data = data.rstrip()
         header = header.decode().strip()
 
         list_header = header.split("\n")

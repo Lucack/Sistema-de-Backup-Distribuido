@@ -25,7 +25,7 @@ def handle_client(client_socket):
         print(f"Arquivo {filename.decode()} recebido.")
 
         filename= filename.decode()
-        data = data.strip()
+        data = data.rstrip()
 
         # receber dados do arquivo        
         while True:

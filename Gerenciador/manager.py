@@ -12,11 +12,22 @@ def handle_client(client_socket):
     # temos que arrumar depois, e faremos baseado no vetor carga
     
     try:
-        filename = client_socket.recv(1024).decode().strip()
-        print(f"Arquivo {filename} recebido.")
 
-        # receber dados do arquivo
-        data = b""
+
+        buffer = b''
+
+        while b'\n\n' not in buffer:
+            buffer += client_socket.recv(1024)
+
+        # Separando header do data
+        filename, data = buffer.split(b'\n\n',1)
+
+        print(f"Arquivo {filename.decode()} recebido.")
+
+        filename= filename.decode()
+        data = data.strip()
+
+        # receber dados do arquivo        
         while True:
             seg = client_socket.recv(1024)
             # if b"<TININI>" == seg:
@@ -59,18 +70,19 @@ def sendto_server(filename, data, principal, replica):
     replica_adress, replica_port = WORKER_SERVERS[replica][0], WORKER_SERVERS[replica][1]
 
     try:
-        manager_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        manager_socket.connect((principal_adress, principal_port))
+        toserver_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        toserver_socket.connect((principal_adress, principal_port))
         header = f"{filename}\n{replica_adress}\n{replica_port}\n\n"
-        manager_socket.sendall(header.encode())
+        print("PRINTANDO HEADER:\n",header)
+        toserver_socket.sendall(header.encode())
         print(f"Header enviado para porta {principal_port}")
 
-        manager_socket.sendall(data)
+        toserver_socket.sendall(data)
         print(f"Conteúdo {filename} enviado para {principal_port}")
 
         end = b"<TININI>"
-        manager_socket.sendall(end)
-        manager_socket.close()
+        toserver_socket.sendall(end)
+        
 
     except Exception as e:
         print(f"Erro no envio do arquivo: {e}")
@@ -92,7 +104,7 @@ def start_manager():
         
         # Handle the client request (sequentially)
         filename, data = handle_client(client_socket)
-        print(filename, data)
+        print(filename)
         principal, replica = choose_sv(carga)
         print(principal,replica)
         #sendto_server(filename, data, WORKER_SERVERS[principal][0], WORKER_SERVERS[principal][1], WORKER_SERVERS[replica][0], WORKER_SERVERS[replica][1])

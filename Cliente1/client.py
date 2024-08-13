@@ -19,7 +19,7 @@ def send_file(client_socket, file_path):
         file_name = os.path.basename(file_path)
         
         # Criar e enviar o cabeçalho
-        header = f"{file_name}\n"
+        header = f"{file_name}\n\n"
         client_socket.sendall(header.encode())
         
         # Ler o conteúdo do arquivo e enviar
@@ -49,14 +49,15 @@ while True:
     if option == '1':
         filename = input("Digite o nome do arquivo para backup: ")
         file_path = os.path.join(DIRECTORY, filename)
-         
-        # Criar um socket TCP/IP
-        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-        # Conectar ao gerente
-        client_socket.connect((SERVER_ADDRESS, SERVER_PORT))
             
         if os.path.isfile(file_path):
+
+            # Criar um socket TCP/IP
+            client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+            # Conectar ao gerente
+            client_socket.connect((SERVER_ADDRESS, SERVER_PORT))
+            
             send_file(client_socket, file_path)
         else:
             print("Arquivo não encontrado")

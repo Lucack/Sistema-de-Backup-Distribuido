@@ -16,7 +16,7 @@ SERVER_PORT = 8082
 SERVER_DIRECTORY = SERVER_NAME.replace(" ", "")
 
 
-def receive_from_manager(connection_socket):
+def receive_from_any(connection_socket):
          
     try:
 
@@ -28,16 +28,18 @@ def receive_from_manager(connection_socket):
         # Separando header do data
         header, data = buffer.split(b'\n\n',1)
 
+        print(f"Itens do Header: \n{header} \n")
+
         data = data.strip()
         header = header.decode().strip()
 
         list_header = header.split("\n")
         filename = list_header[0]
         replicaAdress = list_header[1]
+    
         replicaPort = int(list_header[2])
 
         print(f"Itens do Header: \n{header} \n")
-       
        
         # recebendo arquivo        
         print("Recebendo o arquivo do Manager...")
@@ -61,6 +63,7 @@ def receive_from_manager(connection_socket):
 
         print("Arquivo", filename, "salvo com sucesso")
     
+        connection_socket.close()
         return(filename, replicaAdress, replicaPort, data)
 
 
@@ -71,7 +74,7 @@ def sendto_replica_server(filename, replicaAdress, replicaPort, data):
 
 
     try:
-
+        
         replica_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         replica_socket.connect((replicaAdress, replicaPort))
         header = f"{filename}\n{replicaAdress}\n{replicaPort}\n\n"
@@ -83,11 +86,9 @@ def sendto_replica_server(filename, replicaAdress, replicaPort, data):
 
         end = b"<TININI>"
         replica_socket.sendall(end)
-        replica_socket.close()
-
 
     except Exception as e:
-        print(f"Erro no envio do arquivo para servidor {replicaAdress}:{replicaPort} replica: {e}")
+        print(f"Erro no envio do arquivo para servidor replica ({replicaAdress}:{replicaPort}): {e}")
 
     
     return 
@@ -103,13 +104,14 @@ def main_server():
     print("Escutando por conexões na porta %s \n" % SERVER_PORT)
 
     while True:
-        
+
         # espera por conexões
         connection_socket, address = server_socket.accept()
         print("Conexão aceita pelo endereço", address)
         
-        filename, replicaAdress, replicaPort, data = receive_from_manager(connection_socket)
-        if (replicaPort != SERVER_PORT ): sendto_replica_server(filename, replicaAdress, replicaPort, data)
+        filename, replicaAdress, replicaPort, data = receive_from_any(connection_socket)
+        if (replicaPort != SERVER_PORT ): 
+            sendto_replica_server(filename, replicaAdress, replicaPort, data)
 
 
 main_server()

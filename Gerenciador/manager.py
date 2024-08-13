@@ -18,11 +18,11 @@ def handle_client(client_socket):
         # receber dados do arquivo
         data = b""
         while True:
-            seg = client_socket.recv(1024).strip()
+            seg = client_socket.recv(1024)
             # if b"<TININI>" == seg:
             if b"<TININI>" in seg:
                 seg = seg.replace(b"<TININI>", b"")
-                data += seg
+                data += seg.strip()
                 break
             data += seg
             

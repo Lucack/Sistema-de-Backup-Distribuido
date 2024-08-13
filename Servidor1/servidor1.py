@@ -84,6 +84,7 @@ def sendto_replica_server(filename, replicaAdress, replicaPort, data):
 
         end = b"<TININI>"
         replica_socket.sendall(end)
+        replica_socket.close()
 
     except Exception as e:
         print(f"Erro no envio do arquivo para servidor replica ({replicaAdress}:{replicaPort}): {e}")
@@ -108,7 +109,8 @@ def main_server():
         print("Conexão aceita pelo endereço", address)
         
         filename, replicaAdress, replicaPort, data = receive_from_manager(connection_socket)
-        if (replicaPort != SERVER_PORT ): sendto_replica_server(filename, replicaAdress, replicaPort, data)
-
+        if (replicaPort != SERVER_PORT ): 
+            sendto_replica_server(filename, replicaAdress, replicaPort, data)
+        
 
 main_server()

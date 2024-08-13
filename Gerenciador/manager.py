@@ -26,6 +26,7 @@ def handle_client(client_socket):
                 break
             data += seg
             
+        client_socket.close()
 
     except Exception as e:
         print(f"Erro ao processar os dados do cliente: {e}")
@@ -69,6 +70,7 @@ def sendto_server(filename, data, principal, replica):
 
         end = b"<TININI>"
         manager_socket.sendall(end)
+        manager_socket.close()
 
     except Exception as e:
         print(f"Erro no envio do arquivo: {e}")
@@ -77,6 +79,7 @@ def sendto_server(filename, data, principal, replica):
     carga[replica] += 1
 
 def start_manager():
+    
     manager_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     manager_socket.bind((MANAGER_ADRESS, MANAGER_PORT))
     manager_socket.listen(1)

@@ -83,6 +83,8 @@ def sendto_replica_server(filename, replicaAdress, replicaPort, data):
 
         end = b"<TININI>"
         replica_socket.sendall(end)
+        replica_socket.close()
+
 
     except Exception as e:
         print(f"Erro no envio do arquivo para servidor {replicaAdress}:{replicaPort} replica: {e}")

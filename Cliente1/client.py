@@ -1,10 +1,9 @@
 import socket
 import os
 
-# Endereço do servidor e porta do gerenciador
-SERVER_ADDRESS = "localhost"
+# Configurações do manager
+SERVER_ADDRESS = 'localhost'
 SERVER_PORT = 8080
-
 DIRECTORY = "Cliente1/"
 
 def initial_menu():
@@ -13,57 +12,59 @@ def initial_menu():
     print("2. Sair")
 
 def send_file(client_socket, file_path):
+
+   
     try:
-        # Enviar o nome do arquivo
+        # Enviar o nome do arquivo e o tamanho do conteúdo
         file_name = os.path.basename(file_path)
-        content_length = os.path.getsize(file_path)
         
-        # Enviar a linha de solicitação HTTP
-        request_line = f"PUT /{file_name} HTTP/1.1\r\n"
-        headers = f"Host: {SERVER_ADDRESS}\r\nContent-Type: application/octet-stream\r\nContent-Length: {content_length}\r\n\r\n"
+        # Criar e enviar o cabeçalho
+        header = f"{file_name}\n\n"
+        client_socket.sendall(header.encode())
         
-        client_socket.sendall(request_line.encode())
-        client_socket.sendall(headers.encode())
-        
-        # Enviar o conteúdo do arquivo
+        # Ler o conteúdo do arquivo e enviar
         with open(file_path, 'rb') as file:
-            while chunk := file.read(1024):
+            while True:
+                chunk = file.read(1024)
+                if not chunk:
+                    break
                 client_socket.sendall(chunk)
+
+        end = b"<TININI>"
+        client_socket.sendall(end)
         
-        # Receber a resposta do servidor
-        response = client_socket.recv(1024).decode()
-        print("Resposta do servidor:", response)
+        print("Arquivo enviado.")
+
+        
+
     
     except Exception as e:
         print(f"Erro ao enviar o arquivo: {e}")
 
-# Criar um socket TCP/IP
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-try:
-    # Conectar ao gerenciador
-    client_socket.connect((SERVER_ADDRESS, SERVER_PORT))
+while True:
+    initial_menu()
+    option = input("Escolha uma opção: ")
     
-    while True:
-        initial_menu()
-        option = input("Escolha uma opção: ")
-        
-        if option == '1':
-            file_name = input("Digite o nome do arquivo para backup: ")
-            file_path = os.path.join(DIRECTORY, file_name)
+    if option == '1':
+        filename = input("Digite o nome do arquivo para backup: ")
+        file_path = os.path.join(DIRECTORY, filename)
             
-            if os.path.isfile(file_path):
-                send_file(client_socket, file_path)
-            else:
-                print("Arquivo não encontrado")
-        
-        elif option == '2':
-            print("Saindo...")
-            break
-        
+        if os.path.isfile(file_path):
+
+            # Criar um socket TCP/IP
+            client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+            # Conectar ao gerente
+            client_socket.connect((SERVER_ADDRESS, SERVER_PORT))
+            
+            send_file(client_socket, file_path)
         else:
-            print("Opção inválida. Tente novamente.")
+            print("Arquivo não encontrado")
     
-finally:
-    # Fechar a conexão
-    client_socket.close()
+    elif option == '2':
+        print("Saindo...")
+        break
+    
+    else:
+        print("Opção inválida. Tente novamente.")
